@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 require('dotenv').config()
 
@@ -19,6 +19,7 @@ const client = new MongoClient(uri);
 const run = async() => {
     try{
         const myTasks = client.db('taskManagement').collection('myTasks');
+        const completedTasks = client.db('taskManagement').collection('completedTasks');
 
         //Adding the task to the database
         app.post('/mytasks', async(req, res) => {
@@ -38,6 +39,19 @@ const run = async() => {
             const cursor = myTasks.find(query);
             const tasks = await cursor.toArray();
             res.send(tasks);
+        })
+
+        app.delete('/mytasks/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await myTasks.deleteOne(query);
+            res.send(result);
+        })
+
+        app.post('/completedtasks', async(req, res) => {
+            const task = req.body;
+            const result = await completedTasks.insertOne(task);
+            res.send(result);
         })
     }
     catch(error){
