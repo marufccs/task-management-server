@@ -20,6 +20,7 @@ const run = async() => {
     try{
         const myTasks = client.db('taskManagement').collection('myTasks');
         const completedTasks = client.db('taskManagement').collection('completedTasks');
+        const taskCompleted = client.db('taskManagement').collection('taskcompleted');
 
         //Adding the task to the database
         app.post('/mytasks', async(req, res) => {
@@ -51,6 +52,26 @@ const run = async() => {
         app.post('/completedtasks', async(req, res) => {
             const task = req.body;
             const result = await completedTasks.insertOne(task);
+            res.send(result);
+            console.log(result);
+        })
+
+        app.get('/completedtasks', async(req, res) => {
+            let query= {};
+            if (req.query.email){
+                query={
+                  email: req.query.email
+                }
+              }
+            const cursor =completedTasks.find(query);
+            const tasks = await cursor.toArray();
+            res.send(tasks);
+        })
+
+        app.delete('/completedtasks/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await completedTasks.deleteOne(query);
             res.send(result);
         })
     }
